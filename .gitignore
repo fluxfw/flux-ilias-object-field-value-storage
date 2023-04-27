@@ -1,0 +1,11 @@
+*
+!bin
+!bin/**
+!src
+!src/**
+!.dockerignore
+!.gitignore
+!CHANGELOG.md
+!Dockerfile
+!metadata.json
+!README.md

@@ -1,0 +1,5 @@
+*
+!bin/install-libraries.sh
+!bin/server.mjs
+!src
+!src/**
