@@ -10,7 +10,7 @@ import { METHOD_DELETE, METHOD_PATCH, METHOD_PUT } from "../../../flux-http-api/
 /** @typedef {import("../../../flux-http-api/src/Server/HttpServerRequest.mjs").HttpServerRequest} HttpServerRequest */
 /** @typedef {import("../../../flux-http-api/src/Server/HttpServerResponse.mjs").HttpServerResponse} HttpServerResponse */
 /** @typedef {import("../Ilias/IliasService.mjs").IliasService} IliasService */
-/** @typedef {import("../../../flux-overlay/src/Input.mjs").Input} Input */
+/** @typedef {import("../../../flux-form/src/Input.mjs").Input} Input */
 /** @typedef {import("../../../flux-field-value-storage/src/Value/Value.mjs").Value} Value */
 /** @typedef {import("../../../flux-field-value-storage/src/Value/ValueAsText.mjs").ValueAsText} ValueAsText */
 
