@@ -6,6 +6,13 @@ Changes:
 
 \-
 
+## v2023-05-01-1-beta
+
+Changes:
+
+- UI api route
+- Validate get object type
+
 ## v2023-04-27-1-beta
 
 Changes:

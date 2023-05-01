@@ -12,6 +12,7 @@ import { METHOD_DELETE, METHOD_PATCH, METHOD_PUT } from "../../../flux-http-api/
 /** @typedef {import("../Ilias/IliasService.mjs").IliasService} IliasService */
 /** @typedef {import("../../../flux-overlay/src/Input.mjs").Input} Input */
 /** @typedef {import("../../../flux-field-value-storage/src/Value/Value.mjs").Value} Value */
+/** @typedef {import("../../../flux-field-value-storage/src/Value/ValueAsText.mjs").ValueAsText} ValueAsText */
 
 export class FluxFieldValueStorageService {
     /**
@@ -161,7 +162,7 @@ export class FluxFieldValueStorageService {
 
     /**
      * @param {number} object_id
-     * @returns {Promise<{[key: string]: string} | null>}
+     * @returns {Promise<ValueAsText[] | null>}
      */
     async getValueAsText(object_id) {
         if (!Number.isInteger(object_id)) {

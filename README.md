@@ -40,14 +40,22 @@ Required config are **bold**
 ### In [flux-ilias-nginx-base](https://github.com/fluxfw/flux-ilias-nginx-base)
 
 ```dockerfile
-RUN echo -e 'location /flux-ilias-object-field-value-storage/ {\n    proxy_pass http://flux-ilias-object-field-value-storage/ui/;\n    proxy_pass_request_headers off;\n}' > /flux-ilias-nginx-base/src/custom/flux-ilias-object-field-value-storage.conf
+RUN echo -e 'location /flux-ilias-object-field-value-storage/ui/ {\n    proxy_pass http://flux-ilias-object-field-value-storage/ui/;\n    proxy_pass_request_headers off;\n}\nrewrite ^/flux-ilias-object-field-value-storage/api/(.*)$ /flux-ilias-rest-api-proxy/flux-ilias-object-field-value-storage/$1;' > /flux-ilias-nginx-base/src/custom/flux-ilias-object-field-value-storage.conf
 ```
+
+### Other
+
+...
+
+## apache
+
+...
 
 ## flux-ilias-rest-api Web Proxy
 
 Target key: `flux-ilias-object-field-value-storage`
 
-iframe url: `https://%ilias-host%/flux-ilias-object-field-value-storage?base-api-route=flux-ilias-rest-api-proxy/flux-ilias-object-field-value-storage`
+iframe url: `https://%ilias-host%/flux-ilias-object-field-value-storage/ui`
 
 Page title: `flux-ilias-object-field-value-storage`
 
@@ -55,13 +63,13 @@ Short title: `flux-ilias-object`
 
 View title: `field-value-storage`
 
-Menu item: true
+Menu item: Yes
 
 Menu title: `flux-ilias-object-field-value-storage`
 
 Custom menu icon url: `https://%ilias-host%/templates/default/images/outlined/icon_dcl.svg`
 
-Visible menu item only for users with administrator role: true
+Visible menu item only for users with administrator role: Yes
 
 ## flux-ilias-rest-api Api Proxy
 

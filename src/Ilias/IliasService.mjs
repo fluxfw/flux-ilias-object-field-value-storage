@@ -7,6 +7,14 @@ import { ILIAS_CONFIG_DEFAULT_CLIENT, ILIAS_CONFIG_DEFAULT_PROTOCOL, ILIAS_CONFI
 
 /** @typedef {import("../../../flux-http-api/src/FluxHttpApi.mjs").FluxHttpApi} FluxHttpApi */
 
+const OBJECT_TYPES = Object.freeze([
+    "category",
+    "course",
+    "group",
+    "scorm-learning-module",
+    "test"
+]);
+
 export class IliasService {
     /**
      * @type {string}
@@ -116,9 +124,15 @@ export class IliasService {
      * @returns {Promise<{[key: string]: *} | null>}
      */
     async getObject(id) {
-        return this.#request(
+        const object = await this.#request(
             `object/by-id/${id}`
         );
+
+        if (object === null || !OBJECT_TYPES.includes(object.type)) {
+            return null;
+        }
+
+        return object;
     }
 
     /**
@@ -128,13 +142,7 @@ export class IliasService {
         return this.#request(
             "objects",
             {
-                types: [
-                    "category",
-                    "course",
-                    "group",
-                    "scorm-learning-module",
-                    "test"
-                ].join(",")
+                types: OBJECT_TYPES.join(",")
             }
         );
     }
