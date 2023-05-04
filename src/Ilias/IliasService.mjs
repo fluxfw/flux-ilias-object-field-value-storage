@@ -1,19 +1,12 @@
 import { AUTHORIZATION_SCHEMA_BASIC } from "../../../flux-http-api/src/Authorization/AUTHORIZATION_SCHEMA.mjs";
 import { HEADER_AUTHORIZATION } from "../../../flux-http-api/src/Header/HEADER.mjs";
 import { HttpClientRequest } from "../../../flux-http-api/src/Client/HttpClientRequest.mjs";
+import { ILIAS_OBJECT_TYPES } from "./ILIAS_OBJECT_TYPES.mjs";
 import { PROTOCOL_DEFAULT_PORT } from "../../../flux-http-api/src/Protocol/PROTOCOL_DEFAULT_PORT.mjs";
 import { STATUS_CODE_404 } from "../../../flux-http-api/src/Status/STATUS_CODE.mjs";
 import { ILIAS_CONFIG_DEFAULT_CLIENT, ILIAS_CONFIG_DEFAULT_PROTOCOL, ILIAS_CONFIG_DEFAULT_USER } from "./ILIAS_CONFIG.mjs";
 
 /** @typedef {import("../../../flux-http-api/src/FluxHttpApi.mjs").FluxHttpApi} FluxHttpApi */
-
-const OBJECT_TYPES = Object.freeze([
-    "category",
-    "course",
-    "group",
-    "scorm-learning-module",
-    "test"
-]);
 
 export class IliasService {
     /**
@@ -106,7 +99,7 @@ export class IliasService {
      * @returns {Promise<boolean>}
      */
     async hasUserAdministratorRole(user_id) {
-        if (!Number.isInteger(user_id)) {
+        if (!Number.isInteger(user_id) || user_id < 0) {
             return false;
         }
 
@@ -128,7 +121,7 @@ export class IliasService {
             `object/by-id/${id}`
         );
 
-        if (object === null || !OBJECT_TYPES.includes(object.type)) {
+        if (object === null || !Object.keys(ILIAS_OBJECT_TYPES).includes(object.type)) {
             return null;
         }
 
@@ -136,15 +129,39 @@ export class IliasService {
     }
 
     /**
-     * @returns {Promise<{[key: string]: *}[]>}
+     * @param {number | null} id
+     * @param {number | null} ref_id
+     * @param {string[] | null} type
+     * @param {string | null} title
+     * @returns {Promise<{[key: string]: *}[] | null>}
      */
-    async getObjects() {
-        return this.#request(
+    async getObjects(id = null, ref_id = null, type = null, title = null) {
+        if (id !== null && (!Number.isInteger(id) || id < 0)) {
+            return null;
+        }
+
+        if (ref_id !== null && (!Number.isInteger(ref_id) || ref_id < 0)) {
+            return null;
+        }
+
+        const types = Object.keys(ILIAS_OBJECT_TYPES);
+
+        if (type !== null && (!Array.isArray(type) || type.length === 0 || type.some(_type => typeof _type !== "string" || _type === "" || !types.includes(_type)))) {
+            return null;
+        }
+
+        if (title !== null && (typeof title !== "string" || title === "")) {
+            return null;
+        }
+
+        const _title = title !== null ? title.toLowerCase() : null;
+
+        return (await this.#request(
             "objects",
             {
-                types: OBJECT_TYPES.join(",")
+                types: type !== null ? types.filter(_type => type.includes(_type)) : types
             }
-        );
+        )).filter(object => (id !== null ? object.id === id : true) && (ref_id !== null ? object.ref_id === ref_id : true) && (_title !== null ? object.title.toLowerCase().includes(_title) : true));
     }
 
     /**

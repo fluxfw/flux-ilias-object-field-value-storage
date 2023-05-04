@@ -89,6 +89,12 @@ export class HandleValueRequest {
             );
         }
 
+        if (request.url_path_parts.length === 3 && request.url_path_parts[2] === "get-table-filter-inputs") {
+            return this.#getValueTableFilterInputs(
+                request
+            );
+        }
+
         if (request.url_path_parts.length === 4 && request.url_path_parts[2] === "store") {
             return this.#storeValue(
                 request
@@ -287,8 +293,19 @@ export class HandleValueRequest {
             return response;
         }
 
+        const values = await this.#flux_field_value_storage_service.getValues(
+            Object.fromEntries(request.url.searchParams)
+        );
+
+        if (values === null) {
+            return HttpServerResponse.text(
+                "Invalid filter",
+                STATUS_CODE_400
+            );
+        }
+
         return HttpServerResponse.json(
-            await this.#flux_field_value_storage_service.getValues()
+            values
         );
     }
 
@@ -309,8 +326,41 @@ export class HandleValueRequest {
             return response;
         }
 
+        const table = await this.#flux_field_value_storage_service.getValueTable(
+            Object.fromEntries(request.url.searchParams)
+        );
+
+        if (table === null) {
+            return HttpServerResponse.text(
+                "Invalid filter",
+                STATUS_CODE_400
+            );
+        }
+
         return HttpServerResponse.json(
-            await this.#flux_field_value_storage_service.getValueTable()
+            table
+        );
+    }
+
+    /**
+     * @param {HttpServerRequest} request
+     * @returns {Promise<HttpServerResponse>}
+     */
+    async #getValueTableFilterInputs(request) {
+        const response = await this.#flux_http_api.validateMethods(
+            request,
+            [
+                METHOD_GET,
+                METHOD_HEAD
+            ]
+        );
+
+        if (response !== null) {
+            return response;
+        }
+
+        return HttpServerResponse.json(
+            await this.#flux_field_value_storage_service.getValueTableFilterInputs()
         );
     }
 

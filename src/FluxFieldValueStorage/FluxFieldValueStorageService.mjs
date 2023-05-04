@@ -1,9 +1,11 @@
 import { AUTHORIZATION_SCHEMA_BASIC } from "../../../flux-http-api/src/Authorization/AUTHORIZATION_SCHEMA.mjs";
 import { HttpClientRequest } from "../../../flux-http-api/src/Client/HttpClientRequest.mjs";
+import { ILIAS_OBJECT_TYPES } from "../Ilias/ILIAS_OBJECT_TYPES.mjs";
 import { PROTOCOL_DEFAULT_PORT } from "../../../flux-http-api/src/Protocol/PROTOCOL_DEFAULT_PORT.mjs";
 import { STATUS_CODE_404 } from "../../../flux-http-api/src/Status/STATUS_CODE.mjs";
 import { FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_HOST, FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_PROTOCOL, FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_USER } from "./FLUX_FIELD_VALUE_STORAGE_CONFIG.mjs";
 import { HEADER_AUTHORIZATION, HEADER_CONTENT_TYPE } from "../../../flux-http-api/src/Header/HEADER.mjs";
+import { INPUT_TYPE_NUMBER, INPUT_TYPE_SELECT, INPUT_TYPE_TEXT } from "../../../flux-form/src/INPUT_TYPE.mjs";
 import { METHOD_DELETE, METHOD_PATCH, METHOD_PUT } from "../../../flux-http-api/src/Method/METHOD.mjs";
 
 /** @typedef {import("../../../flux-http-api/src/FluxHttpApi.mjs").FluxHttpApi} FluxHttpApi */
@@ -13,6 +15,7 @@ import { METHOD_DELETE, METHOD_PATCH, METHOD_PUT } from "../../../flux-http-api/
 /** @typedef {import("../../../flux-form/src/Input.mjs").Input} Input */
 /** @typedef {import("../../../flux-field-value-storage/src/Value/Value.mjs").Value} Value */
 /** @typedef {import("../../../flux-field-value-storage/src/Value/ValueAsText.mjs").ValueAsText} ValueAsText */
+/** @typedef {import("../../../flux-field-value-storage/src/Value/ValueTable.mjs").ValueTable} ValueTable */
 
 export class FluxFieldValueStorageService {
     /**
@@ -101,12 +104,13 @@ export class FluxFieldValueStorageService {
      * @returns {Promise<void>}
      */
     async deleteValue(object_id) {
-        if (!Number.isInteger(object_id)) {
+        if (!Number.isInteger(object_id) || object_id < 0) {
             return;
         }
 
         await this.#request(
             `value/delete/${object_id}`,
+            null,
             null,
             METHOD_DELETE,
             false
@@ -121,12 +125,17 @@ export class FluxFieldValueStorageService {
             "value/get-new-inputs"
         );
 
-        const name_input = inputs.find(input => input.name === "name");
-        name_input.label = "ID";
-        name_input.pattern = /^\d+$/.source;
-        name_input.subtitle = "Only digits. Can not be changed anymore";
-
-        return inputs;
+        return [
+            {
+                label: "Object id",
+                name: "name",
+                pattern: /^\d+$/.source,
+                required: true,
+                subtitle: "Only digits. Can not be changed anymore",
+                type: INPUT_TYPE_TEXT
+            },
+            ...inputs.filter(input => input.name !== "name")
+        ];
     }
 
     /**
@@ -134,7 +143,7 @@ export class FluxFieldValueStorageService {
      * @returns {Promise<Value | null>}
      */
     async getValue(object_id) {
-        if (!Number.isInteger(object_id)) {
+        if (!Number.isInteger(object_id) || object_id < 0) {
             return null;
         }
 
@@ -156,7 +165,10 @@ export class FluxFieldValueStorageService {
 
         return {
             ...value,
-            "object-id": object.id
+            "object-id": object.id,
+            "object-ref-id": object.ref_id,
+            "object-type": object.type,
+            "object-title": object.title
         };
     }
 
@@ -165,7 +177,7 @@ export class FluxFieldValueStorageService {
      * @returns {Promise<ValueAsText[] | null>}
      */
     async getValueAsText(object_id) {
-        if (!Number.isInteger(object_id)) {
+        if (!Number.isInteger(object_id) || object_id < 0) {
             return null;
         }
 
@@ -188,7 +200,7 @@ export class FluxFieldValueStorageService {
      */
     async getValueInputs(object_id = null) {
         if (object_id !== null) {
-            if (!Number.isInteger(object_id)) {
+            if (!Number.isInteger(object_id) || object_id < 0) {
                 return null;
             }
 
@@ -207,44 +219,136 @@ export class FluxFieldValueStorageService {
     }
 
     /**
-     * @returns {Promise<Value[]>}
+     * @param {{[key: string]: *} | null} filter
+     * @returns {Promise<Value[] | null>}
      */
-    async getValues() {
+    async getValues(filter = null) {
+        const _filter = filter ?? {};
+        if (typeof _filter !== "object") {
+            return null;
+        }
+
+        let filter_object_id = _filter["object-id"] ?? null;
+        if (filter_object_id !== null && typeof filter_object_id === "string" && /^\d+$/.test(filter_object_id)) {
+            filter_object_id = parseInt(filter_object_id);
+        }
+
+        let filter_object_ref_id = _filter["object-ref-id"] ?? null;
+        if (filter_object_ref_id !== null && typeof filter_object_ref_id === "string" && /^\d+$/.test(filter_object_ref_id)) {
+            filter_object_ref_id = parseInt(filter_object_ref_id);
+        }
+
+        let filter_object_type = filter["object-type"] ?? null;
+        if (filter_object_type !== null && typeof filter_object_type === "string") {
+            filter_object_type = filter_object_type.split(",");
+        }
+
+        let filter_has_value = filter["has-value"] ?? null;
+        if (filter_has_value !== null && (typeof filter_has_value !== "string" || !(filter_has_value === "true" || filter_has_value === "false"))) {
+            return null;
+        }
+        filter_has_value = filter_has_value !== null ? filter_has_value === "true" : null;
+
         const values = await this.#request(
-            "value/get"
+            "value/get",
+            {
+                ...filter_object_id !== null ? {
+                    name: filter_object_id
+                } : null
+            }
         );
 
-        return (await this.#ilias_service.getObjects()).map(object => {
+        if (values === null) {
+            return null;
+        }
+
+        const objects = await this.#ilias_service.getObjects(
+            filter_object_id,
+            filter_object_ref_id,
+            filter_object_type,
+            filter["object-title"] ?? null
+        );
+
+        if (objects === null) {
+            return null;
+        }
+
+        return objects.map(object => {
             const name = `${object.id}`;
 
             const value = values.find(_value => _value.name === name) ?? null;
 
-            if (value === null) {
+            if (filter_has_value !== null && filter_has_value ? value !== null : value === null) {
                 return null;
             }
 
             return {
-                ...value,
-                "object-id": object.id
+                ...value !== null ? value : {
+                    name,
+                    values: []
+                },
+                "object-id": object.id,
+                "object-ref-id": object.ref_id,
+                "object-type": object.type,
+                "object-title": object.title
             };
         }).filter(value => value !== null);
     }
 
     /**
-     * @returns {Promise<{columns: {[key: string]: string}[], rows: {[key: string]: string}[]}>}
+     * @param {{[key: string]: *} | null} filter
+     * @returns {Promise<ValueTable | null>}
      */
-    async getValueTable() {
+    async getValueTable(filter = null) {
+        const _filter = filter ?? {};
+        if (typeof _filter !== "object") {
+            return null;
+        }
+
+        let filter_object_id = _filter["object-id"] ?? null;
+        if (filter_object_id !== null && typeof filter_object_id === "string" && /^\d+$/.test(filter_object_id)) {
+            filter_object_id = parseInt(filter_object_id);
+        }
+
+        let filter_object_ref_id = _filter["object-ref-id"] ?? null;
+        if (filter_object_ref_id !== null && typeof filter_object_ref_id === "string" && /^\d+$/.test(filter_object_ref_id)) {
+            filter_object_ref_id = parseInt(filter_object_ref_id);
+        }
+
+        let filter_object_type = filter["object-type"] ?? null;
+        if (filter_object_type !== null && typeof filter_object_type === "string") {
+            filter_object_type = filter_object_type.split(",");
+        }
+
+        let filter_has_value = filter["has-value"] ?? null;
+        if (filter_has_value !== null && (typeof filter_has_value !== "string" || !(filter_has_value === "true" || filter_has_value === "false"))) {
+            return null;
+        }
+        filter_has_value = filter_has_value !== null ? filter_has_value === "true" : null;
+
         const table = await this.#request(
-            "value/get-table"
+            "value/get-table",
+            {
+                ...filter_object_id !== null ? {
+                    name: filter_object_id
+                } : null
+            }
         );
 
-        const type_labels = {
-            category: "Category",
-            course: "Course",
-            group: "Group",
-            "scorm-learning-module": "Scorm learning module",
-            test: "Test"
-        };
+        if (table === null) {
+            return null;
+        }
+
+        const objects = await this.#ilias_service.getObjects(
+            filter_object_id,
+            filter_object_ref_id,
+            filter_object_type,
+            filter["object-title"] ?? null
+        );
+
+        if (objects === null) {
+            return null;
+        }
 
         const columns = table.columns.filter(column => column.key !== "name");
 
@@ -252,27 +356,31 @@ export class FluxFieldValueStorageService {
             "show-add-new": false,
             columns: [
                 {
-                    key: "name",
-                    label: "ID"
+                    key: "object-id",
+                    label: "Object id"
                 },
                 {
-                    key: "ref-id",
-                    label: "Ref ID"
+                    key: "object-ref-id",
+                    label: "Object ref id"
                 },
                 {
-                    key: "type",
-                    label: "Type"
+                    key: "object-type",
+                    label: "Object type"
                 },
                 {
-                    key: "title",
-                    label: "Title"
+                    key: "object-title",
+                    label: "Object title"
                 },
                 ...columns
             ],
-            rows: (await this.#ilias_service.getObjects()).map(object => {
+            rows: objects.map(object => {
                 const name = `${object.id}`;
 
                 const row = table.rows.find(_row => _row.name === name) ?? null;
+
+                if (filter_has_value !== null && (filter_has_value ? row === null : row !== null)) {
+                    return null;
+                }
 
                 return {
                     ...row !== null ? row : {
@@ -283,12 +391,73 @@ export class FluxFieldValueStorageService {
                             "-"
                         ]))
                     },
-                    "ref-id": `${object.ref_id ?? "-"}`,
-                    type: type_labels[object.type] ?? object.type,
-                    title: object.title
+                    "object-id": name,
+                    "object-ref-id": `${object.ref_id ?? "-"}`,
+                    "object-type": ILIAS_OBJECT_TYPES[object.type] ?? object.type,
+                    "object-title": object.title
                 };
-            })
+            }).filter(row => row !== null)
         };
+    }
+
+    /**
+     * @returns {Promise<Input[]>}
+     */
+    async getValueTableFilterInputs() {
+        const inputs = await this.#request(
+            "value/get-table-filter-inputs"
+        );
+
+        return [
+            {
+                label: "Object id",
+                min: "0",
+                name: "object-id",
+                step: "1",
+                type: INPUT_TYPE_NUMBER
+            },
+            {
+                label: "Object ref id",
+                min: "0",
+                name: "object-ref-id",
+                step: "1",
+                type: INPUT_TYPE_NUMBER
+            },
+            {
+                label: "Object type",
+                multiple: true,
+                name: "object-type",
+                options: Object.entries(ILIAS_OBJECT_TYPES).map(([
+                    value,
+                    label
+                ]) => ({
+                    label,
+                    value
+                })),
+                type: INPUT_TYPE_SELECT
+            },
+            {
+                label: "Object title",
+                name: "object-title",
+                type: INPUT_TYPE_TEXT
+            },
+            {
+                label: "Has value",
+                name: "has-value",
+                options: [
+                    {
+                        label: "No",
+                        value: "false"
+                    },
+                    {
+                        label: "Yes",
+                        value: "true"
+                    }
+                ],
+                type: INPUT_TYPE_SELECT
+            },
+            ...inputs.filter(input => input.name !== "name")
+        ];
     }
 
     /**
@@ -325,7 +494,7 @@ export class FluxFieldValueStorageService {
             return false;
         }
 
-        if (!Number.isInteger(value["object-id"])) {
+        if (!Number.isInteger(value["object-id"]) || value["object-id"] < 0) {
             return false;
         }
 
@@ -339,6 +508,7 @@ export class FluxFieldValueStorageService {
 
         await this.#request(
             `value/store/${value["object-id"]}`,
+            null,
             value,
             keep_other_field_values ?? false ? METHOD_PATCH : METHOD_PUT,
             false
@@ -356,17 +526,29 @@ export class FluxFieldValueStorageService {
 
     /**
      * @param {string} route
+     * @param {{[key: string]: *} | null} query_params
      * @param {*} body
      * @param {string | null} method
      * @param {boolean | null} response_body
      * @returns {Promise<*>}
      */
-    async #request(route, body = null, method = null, response_body = null) {
+    async #request(route, query_params = null, body = null, method = null, response_body = null) {
+        const url = new URL(`/api/${route}`, this.#url);
+
+        if (query_params !== null) {
+            for (const [
+                key,
+                value
+            ] of Object.entries(query_params)) {
+                url.searchParams.append(key, value);
+            }
+        }
+
         const _response_body = response_body ?? true;
 
         const response = await this.#flux_http_api.request(
             HttpClientRequest[body !== null ? "json" : "new"](
-                new URL(`/api/${route}`, this.#url),
+                url,
                 body,
                 method,
                 {
