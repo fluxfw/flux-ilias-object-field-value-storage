@@ -1,4 +1,5 @@
 import { HttpServerResponse } from "../../../flux-http-api/src/Server/HttpServerResponse.mjs";
+import { ILIAS_OBJECT_ID_PATTERN } from "../Ilias/ILIAS_OBJECT_ID.mjs";
 import { STATUS_CODE_401, STATUS_CODE_403 } from "../../../flux-http-api/src/Status/STATUS_CODE.mjs";
 
 /** @typedef {import("../../../flux-authentication-backend/src/FluxAuthenticationBackend.mjs").FluxAuthenticationBackend} FluxAuthenticationBackend */
@@ -50,7 +51,7 @@ export class FluxIliasRestApiProxyAuthenticationBackend {
         }
 
         if (!(await this.#ilias_service.hasUserAdministratorRole(
-            /^\d+$/.test(user_id) ? parseInt(user_id) : user_id
+            ILIAS_OBJECT_ID_PATTERN.test(user_id) ? parseInt(user_id) : user_id
         )).length === 0) {
             return HttpServerResponse.text(
                 "No access",

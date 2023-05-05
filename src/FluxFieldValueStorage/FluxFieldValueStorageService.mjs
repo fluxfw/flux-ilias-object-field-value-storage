@@ -1,5 +1,7 @@
 import { AUTHORIZATION_SCHEMA_BASIC } from "../../../flux-http-api/src/Authorization/AUTHORIZATION_SCHEMA.mjs";
 import { HttpClientRequest } from "../../../flux-http-api/src/Client/HttpClientRequest.mjs";
+import { ILIAS_OBJECT_ID_PATTERN } from "../Ilias/ILIAS_OBJECT_ID.mjs";
+import { ILIAS_OBJECT_TITLE_PATTERN } from "../Ilias/ILIAS_OBJECT_TITLE.mjs";
 import { ILIAS_OBJECT_TYPES } from "../Ilias/ILIAS_OBJECT_TYPES.mjs";
 import { PROTOCOL_DEFAULT_PORT } from "../../../flux-http-api/src/Protocol/PROTOCOL_DEFAULT_PORT.mjs";
 import { STATUS_CODE_404 } from "../../../flux-http-api/src/Status/STATUS_CODE.mjs";
@@ -129,7 +131,7 @@ export class FluxFieldValueStorageService {
             {
                 label: "Object id",
                 name: "name",
-                pattern: /^\d+$/.source,
+                pattern: ILIAS_OBJECT_ID_PATTERN.source,
                 required: true,
                 subtitle: "Only digits. Can not be changed anymore",
                 type: INPUT_TYPE_TEXT
@@ -228,26 +230,12 @@ export class FluxFieldValueStorageService {
             return null;
         }
 
-        let filter_object_id = _filter["object-id"] ?? null;
-        if (filter_object_id !== null && typeof filter_object_id === "string" && /^\d+$/.test(filter_object_id)) {
-            filter_object_id = parseInt(filter_object_id);
-        }
+        const filter_object_id = (_filter["object-id"] ?? null) !== null ? typeof _filter["object-id"] === "string" && ILIAS_OBJECT_ID_PATTERN.test(_filter["object-id"]) ? parseInt(_filter["object-id"]) : _filter["object-id"] : null;
 
-        let filter_object_ref_id = _filter["object-ref-id"] ?? null;
-        if (filter_object_ref_id !== null && typeof filter_object_ref_id === "string" && /^\d+$/.test(filter_object_ref_id)) {
-            filter_object_ref_id = parseInt(filter_object_ref_id);
-        }
-
-        let filter_object_type = filter["object-type"] ?? null;
-        if (filter_object_type !== null && typeof filter_object_type === "string") {
-            filter_object_type = filter_object_type.split(",");
-        }
-
-        let filter_has_value = filter["has-value"] ?? null;
-        if (filter_has_value !== null && (typeof filter_has_value !== "string" || !(filter_has_value === "true" || filter_has_value === "false"))) {
+        const filter_has_value = (_filter["has-value"] ?? null) !== null ? _filter["has-value"] === "true" ? true : _filter["has-value"] === "false" ? false : _filter["has-value"] : null;
+        if (filter_has_value !== null && typeof filter_has_value !== "boolean") {
             return null;
         }
-        filter_has_value = filter_has_value !== null ? filter_has_value === "true" : null;
 
         const values = await this.#request(
             "value/get",
@@ -264,9 +252,9 @@ export class FluxFieldValueStorageService {
 
         const objects = await this.#ilias_service.getObjects(
             filter_object_id,
-            filter_object_ref_id,
-            filter_object_type,
-            filter["object-title"] ?? null
+            (_filter["object-ref-id"] ?? null) !== null ? typeof _filter["object-ref-id"] === "string" && ILIAS_OBJECT_ID_PATTERN.test(_filter["object-ref-id"]) ? parseInt(_filter["object-ref-id"]) : _filter["object-ref-id"] : null,
+            (_filter["object-type"] ?? null) !== null ? typeof _filter["object-type"] === "string" ? _filter["object-type"].split(",") : _filter["object-type"] : null,
+            _filter["object-title"] ?? null
         );
 
         if (objects === null) {
@@ -305,26 +293,12 @@ export class FluxFieldValueStorageService {
             return null;
         }
 
-        let filter_object_id = _filter["object-id"] ?? null;
-        if (filter_object_id !== null && typeof filter_object_id === "string" && /^\d+$/.test(filter_object_id)) {
-            filter_object_id = parseInt(filter_object_id);
-        }
+        const filter_object_id = (_filter["object-id"] ?? null) !== null ? typeof _filter["object-id"] === "string" && ILIAS_OBJECT_ID_PATTERN.test(_filter["object-id"]) ? parseInt(_filter["object-id"]) : _filter["object-id"] : null;
 
-        let filter_object_ref_id = _filter["object-ref-id"] ?? null;
-        if (filter_object_ref_id !== null && typeof filter_object_ref_id === "string" && /^\d+$/.test(filter_object_ref_id)) {
-            filter_object_ref_id = parseInt(filter_object_ref_id);
-        }
-
-        let filter_object_type = filter["object-type"] ?? null;
-        if (filter_object_type !== null && typeof filter_object_type === "string") {
-            filter_object_type = filter_object_type.split(",");
-        }
-
-        let filter_has_value = filter["has-value"] ?? null;
-        if (filter_has_value !== null && (typeof filter_has_value !== "string" || !(filter_has_value === "true" || filter_has_value === "false"))) {
+        const filter_has_value = (_filter["has-value"] ?? null) !== null ? _filter["has-value"] === "true" ? true : _filter["has-value"] === "false" ? false : _filter["has-value"] : null;
+        if (filter_has_value !== null && typeof filter_has_value !== "boolean") {
             return null;
         }
-        filter_has_value = filter_has_value !== null ? filter_has_value === "true" : null;
 
         const table = await this.#request(
             "value/get-table",
@@ -341,9 +315,9 @@ export class FluxFieldValueStorageService {
 
         const objects = await this.#ilias_service.getObjects(
             filter_object_id,
-            filter_object_ref_id,
-            filter_object_type,
-            filter["object-title"] ?? null
+            (_filter["object-ref-id"] ?? null) !== null ? typeof _filter["object-ref-id"] === "string" && ILIAS_OBJECT_ID_PATTERN.test(_filter["object-ref-id"]) ? parseInt(_filter["object-ref-id"]) : _filter["object-ref-id"] : null,
+            (_filter["object-type"] ?? null) !== null ? typeof _filter["object-type"] === "string" ? _filter["object-type"].split(",") : _filter["object-type"] : null,
+            _filter["object-title"] ?? null
         );
 
         if (objects === null) {
@@ -439,6 +413,8 @@ export class FluxFieldValueStorageService {
             {
                 label: "Object title",
                 name: "object-title",
+                pattern: ILIAS_OBJECT_TITLE_PATTERN.source,
+                subtitle: "Only letters, digits, dashes, underscores or spaces",
                 type: INPUT_TYPE_TEXT
             },
             {

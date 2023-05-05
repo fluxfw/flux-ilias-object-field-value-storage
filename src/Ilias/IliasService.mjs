@@ -1,6 +1,7 @@
 import { AUTHORIZATION_SCHEMA_BASIC } from "../../../flux-http-api/src/Authorization/AUTHORIZATION_SCHEMA.mjs";
 import { HEADER_AUTHORIZATION } from "../../../flux-http-api/src/Header/HEADER.mjs";
 import { HttpClientRequest } from "../../../flux-http-api/src/Client/HttpClientRequest.mjs";
+import { ILIAS_OBJECT_TITLE_PATTERN } from "./ILIAS_OBJECT_TITLE.mjs";
 import { ILIAS_OBJECT_TYPES } from "./ILIAS_OBJECT_TYPES.mjs";
 import { PROTOCOL_DEFAULT_PORT } from "../../../flux-http-api/src/Protocol/PROTOCOL_DEFAULT_PORT.mjs";
 import { STATUS_CODE_404 } from "../../../flux-http-api/src/Status/STATUS_CODE.mjs";
@@ -150,18 +151,19 @@ export class IliasService {
             return null;
         }
 
-        if (title !== null && (typeof title !== "string" || title === "")) {
+        if (title !== null && (typeof title !== "string" || !ILIAS_OBJECT_TITLE_PATTERN.test(title))) {
             return null;
         }
-
-        const _title = title !== null ? title.toLowerCase() : null;
 
         return (await this.#request(
             "objects",
             {
-                types: type !== null ? types.filter(_type => type.includes(_type)) : types
+                types: type !== null ? types.filter(_type => type.includes(_type)) : types,
+                ...title !== null ? {
+                    title
+                } : null
             }
-        )).filter(object => (id !== null ? object.id === id : true) && (ref_id !== null ? object.ref_id === ref_id : true) && (_title !== null ? object.title.toLowerCase().includes(_title) : true));
+        )).filter(object => (id !== null ? object.id === id : true) && (ref_id !== null ? object.ref_id === ref_id : true));
     }
 
     /**

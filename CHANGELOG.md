@@ -6,6 +6,12 @@ Changes:
 
 \-
 
+## v2023-05-05-1-beta
+
+Changes:
+
+- Object title filter
+
 ## v2023-05-04-1-beta
 
 Changes:

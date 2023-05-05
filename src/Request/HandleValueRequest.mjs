@@ -1,4 +1,5 @@
 import { HttpServerResponse } from "../../../flux-http-api/src/Server/HttpServerResponse.mjs";
+import { ILIAS_OBJECT_ID_PATTERN } from "../Ilias/ILIAS_OBJECT_ID.mjs";
 import { METHOD_DELETE, METHOD_GET, METHOD_HEAD, METHOD_PATCH, METHOD_PUT } from "../../../flux-http-api/src/Method/METHOD.mjs";
 import { STATUS_CODE_400, STATUS_CODE_404 } from "../../../flux-http-api/src/Status/STATUS_CODE.mjs";
 
@@ -128,7 +129,7 @@ export class HandleValueRequest {
         ] = request.url_path_parts;
 
         await this.#flux_field_value_storage_service.deleteValue(
-            /^\d+$/.test(object_id) ? parseInt(object_id) : object_id
+            ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseInt(object_id) : object_id
         );
 
         return HttpServerResponse.new();
@@ -181,7 +182,7 @@ export class HandleValueRequest {
         ] = request.url_path_parts;
 
         const value = await this.#flux_field_value_storage_service.getValue(
-            /^\d+$/.test(object_id) ? parseInt(object_id) : object_id
+            ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseInt(object_id) : object_id
         );
 
         if (value === null) {
@@ -221,7 +222,7 @@ export class HandleValueRequest {
         ] = request.url_path_parts;
 
         const value = await this.#flux_field_value_storage_service.getValueAsText(
-            /^\d+$/.test(object_id) ? parseInt(object_id) : object_id
+            ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseInt(object_id) : object_id
         );
 
         if (value === null) {
@@ -261,7 +262,7 @@ export class HandleValueRequest {
         ] = request.url_path_parts;
 
         const inputs = await this.#flux_field_value_storage_service.getValueInputs(
-            (object_id ?? null) !== null && /^\d+$/.test(object_id) ? parseInt(object_id) : object_id
+            (object_id ?? null) !== null && ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseInt(object_id) : object_id
         );
 
         if (inputs === null) {
@@ -403,7 +404,7 @@ export class HandleValueRequest {
         const ok = await this.#flux_field_value_storage_service.storeValue(
             {
                 ...value,
-                "object-id": /^\d+$/.test(object_id) ? parseInt(object_id) : object_id
+                "object-id": ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseInt(object_id) : object_id
             },
             request.method === METHOD_PATCH
         );
