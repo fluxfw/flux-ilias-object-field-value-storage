@@ -38,7 +38,7 @@ secrets:
         file: ./data/secrets/ilias_rest_password
 ```
 
-If you use `flux-ilias` on the same compose file
+If you use `flux-ilias` on the same compose file (Or same network)
 
 ```yaml
 services:
@@ -123,4 +123,4 @@ Url: `http://flux-ilias-object-field-value-storage/flux-ilias-rest-api-proxy`
 
 User: `flux-ilias-object-field-value-storage`
 
-Password: ...
+Password: %...%
