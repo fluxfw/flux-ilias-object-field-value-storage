@@ -128,9 +128,14 @@ export class HandleValueRequest {
             object_id
         ] = request.url_path_parts;
 
-        await this.#flux_field_value_storage_service.deleteValue(
-            ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseInt(object_id) : object_id
-        );
+        if (!await this.#flux_field_value_storage_service.deleteValue(
+            ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseFloat(object_id) : object_id
+        )) {
+            return HttpServerResponse.text(
+                "Invalid value",
+                STATUS_CODE_400
+            );
+        }
 
         return HttpServerResponse.new();
     }
@@ -182,7 +187,7 @@ export class HandleValueRequest {
         ] = request.url_path_parts;
 
         const value = await this.#flux_field_value_storage_service.getValue(
-            ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseInt(object_id) : object_id
+            ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseFloat(object_id) : object_id
         );
 
         if (value === null) {
@@ -222,7 +227,7 @@ export class HandleValueRequest {
         ] = request.url_path_parts;
 
         const value = await this.#flux_field_value_storage_service.getValueAsText(
-            ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseInt(object_id) : object_id
+            ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseFloat(object_id) : object_id
         );
 
         if (value === null) {
@@ -262,7 +267,7 @@ export class HandleValueRequest {
         ] = request.url_path_parts;
 
         const inputs = await this.#flux_field_value_storage_service.getValueInputs(
-            (object_id ?? null) !== null && ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseInt(object_id) : object_id
+            typeof object_id === "string" && ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseFloat(object_id) : object_id ?? null
         );
 
         if (inputs === null) {
@@ -396,20 +401,16 @@ export class HandleValueRequest {
             console.error(error);
 
             return HttpServerResponse.text(
-                "Invalid body",
+                "Invalid value",
                 STATUS_CODE_400
             );
         }
 
-        const ok = await this.#flux_field_value_storage_service.storeValue(
-            {
-                ...value,
-                "object-id": ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseInt(object_id) : object_id
-            },
+        if (!await this.#flux_field_value_storage_service.storeValue(
+            ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseFloat(object_id) : object_id,
+            value,
             request.method === METHOD_PATCH
-        );
-
-        if (!ok) {
+        )) {
             return HttpServerResponse.text(
                 "Invalid value",
                 STATUS_CODE_400

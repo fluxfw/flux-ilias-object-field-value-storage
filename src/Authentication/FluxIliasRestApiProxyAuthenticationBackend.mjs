@@ -51,7 +51,7 @@ export class FluxIliasRestApiProxyAuthenticationBackend {
         }
 
         if (!(await this.#ilias_service.hasUserAdministratorRole(
-            ILIAS_OBJECT_ID_PATTERN.test(user_id) ? parseInt(user_id) : user_id
+            ILIAS_OBJECT_ID_PATTERN.test(user_id) ? parseFloat(user_id) : user_id
         )).length === 0) {
             return HttpServerResponse.text(
                 "No access",

@@ -96,28 +96,14 @@ export class IliasService {
     }
 
     /**
-     * @param {number} user_id
-     * @returns {Promise<boolean>}
-     */
-    async hasUserAdministratorRole(user_id) {
-        if (!Number.isInteger(user_id) || user_id < 0) {
-            return false;
-        }
-
-        return (await this.#request(
-            "user-roles",
-            {
-                user_id,
-                role_id: (await this.#getConstants()).administrator_role_id
-            }
-        )).length > 0;
-    }
-
-    /**
      * @param {number} id
      * @returns {Promise<{[key: string]: *} | null>}
      */
     async getObject(id) {
+        if (!Number.isInteger(id) || id < 0) {
+            return null;
+        }
+
         const object = await this.#request(
             `object/by-id/${id}`
         );
@@ -146,7 +132,6 @@ export class IliasService {
         }
 
         const types = Object.keys(ILIAS_OBJECT_TYPES);
-
         if (type !== null && (!Array.isArray(type) || type.length === 0 || type.some(_type => typeof _type !== "string" || _type === "" || !types.includes(_type)))) {
             return null;
         }
@@ -155,15 +140,39 @@ export class IliasService {
             return null;
         }
 
-        return (await this.#request(
+        return this.#request(
             "objects",
             {
+                ...id !== null ? {
+                    id
+                } : null,
+                ...ref_id !== null ? {
+                    ref_id
+                } : null,
                 types: type !== null ? types.filter(_type => type.includes(_type)) : types,
                 ...title !== null ? {
                     title
                 } : null
             }
-        )).filter(object => (id !== null ? object.id === id : true) && (ref_id !== null ? object.ref_id === ref_id : true));
+        );
+    }
+
+    /**
+     * @param {number} user_id
+     * @returns {Promise<boolean>}
+     */
+    async hasUserAdministratorRole(user_id) {
+        if (!Number.isInteger(user_id) || user_id < 0) {
+            return false;
+        }
+
+        return (await this.#request(
+            "user-roles",
+            {
+                user_id,
+                role_id: (await this.#getConstants()).administrator_role_id
+            }
+        )).length > 0;
     }
 
     /**

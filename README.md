@@ -2,7 +2,53 @@
 
 Ilias object field value storage
 
-## Config
+## Set up
+
+*You need to fill placeholders (Wrapped in `%`), create secret files and adjust to your needs (Applies everywhere)*
+
+### flux-field-value-storage
+
+You need a `flux-field-value-storage` server
+
+[Set up](https://github.com/fluxfw/flux-field-value-storage/blob/main/README.md#set-up)
+
+### Docker
+
+#### Compose
+
+```yaml
+services:
+    flux-ilias-object-field-value-storage:
+        depends_on:
+            - flux-field-value-storage
+        environment:
+            - FLUX_ILIAS_OBJECT_FIELD_VALUE_STORAGE_AUTHENTICATION_PASSWORD_FILE=/run/secrets/flux_ilias_object_field_value_storage_password
+            - FLUX_ILIAS_OBJECT_FIELD_VALUE_STORAGE_FLUX_FIELD_VALUE_STORAGE_PASSWORD_FILE=/run/secrets/flux_field_value_storage_password
+            - FLUX_ILIAS_OBJECT_FIELD_VALUE_STORAGE_ILIAS_HOST=%ilias-host%
+            - FLUX_ILIAS_OBJECT_FIELD_VALUE_STORAGE_ILIAS_PASSWORD_FILE=/run/secrets/ilias_rest_password
+        image: fluxfw/flux-ilias-object-field-value-storage:%version%
+        secrets:
+            - flux_field_value_storage_password
+            - flux_ilias_object_field_value_storage_password
+            - ilias_rest_password
+secrets:
+    flux_ilias_object_field_value_storage_password:
+        file: ./data/secrets/flux_ilias_object_field_value_storage_password
+    ilias_rest_password:
+        file: ./data/secrets/ilias_rest_password
+```
+
+If you use `flux-ilias` on the same compose file
+
+```yaml
+services:
+    flux-ilias-object-field-value-storage:
+        environment:
+            - FLUX_ILIAS_OBJECT_FIELD_VALUE_STORAGE_ILIAS_HOST=nginx
+            - FLUX_ILIAS_OBJECT_FIELD_VALUE_STORAGE_ILIAS_PROTOCOL=http
+```
+
+### Config
 
 | Config | Default value | Environment variable | Cli parameter | Config JSON file |
 | ------ | ------------- | -------------------- | ------------- | ---------------- |
@@ -35,27 +81,25 @@ Ilias object field value storage
 
 Required config are **bold**
 
-## nginx
+### flux-ilias-rest-api
 
-### In [flux-ilias-nginx-base](https://github.com/fluxfw/flux-ilias-nginx-base)
+You need `flux-ilias-rest-api` on your ILIAS server
+
+[Set up](https://github.com/fluxfw/flux-ilias-rest-api/blob/main/README.md#installation)
+
+You need to create an ILIAS `rest` user
+
+#### In [flux-ilias-nginx-base](https://github.com/fluxfw/flux-ilias-nginx-base)
 
 ```dockerfile
 RUN echo -e 'location /flux-ilias-object-field-value-storage/ui/ {\n    proxy_pass http://flux-ilias-object-field-value-storage/ui/;\n    proxy_pass_request_headers off;\n}\nrewrite ^/flux-ilias-object-field-value-storage/api/(.*)$ /flux-ilias-rest-api-proxy/flux-ilias-object-field-value-storage/$1;' > /flux-ilias-nginx-base/src/custom/flux-ilias-object-field-value-storage.conf
 ```
 
-### Other
-
-...
-
-## apache
-
-...
-
-## flux-ilias-rest-api Web Proxy
+#### Web Proxy
 
 Target key: `flux-ilias-object-field-value-storage`
 
-iframe url: `https://%ilias-host%/flux-ilias-object-field-value-storage/ui`
+iframe url: `https://%ilias-host%/flux-ilias-object-field-value-storage/ui/`
 
 Page title: `flux-ilias-object-field-value-storage`
 
@@ -71,7 +115,7 @@ Custom menu icon url: `https://%ilias-host%/templates/default/images/outlined/ic
 
 Visible menu item only for users with administrator role: Yes
 
-## flux-ilias-rest-api Api Proxy
+#### Api Proxy
 
 Target key: `flux-ilias-object-field-value-storage`
 
