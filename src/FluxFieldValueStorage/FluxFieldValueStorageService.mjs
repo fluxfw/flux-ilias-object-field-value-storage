@@ -1,14 +1,15 @@
 import { AUTHORIZATION_SCHEMA_BASIC } from "../../../flux-http-api/src/Authorization/AUTHORIZATION_SCHEMA.mjs";
 import { HttpClientRequest } from "../../../flux-http-api/src/Client/HttpClientRequest.mjs";
+import { HttpClientResponse } from "../../../flux-http-api/src/Client/HttpClientResponse.mjs";
 import { ILIAS_OBJECT_ID_PATTERN } from "../Ilias/ILIAS_OBJECT_ID.mjs";
 import { ILIAS_OBJECT_TITLE_PATTERN } from "../Ilias/ILIAS_OBJECT_TITLE.mjs";
 import { ILIAS_OBJECT_TYPES } from "../Ilias/ILIAS_OBJECT_TYPES.mjs";
 import { PROTOCOL_DEFAULT_PORT } from "../../../flux-http-api/src/Protocol/PROTOCOL_DEFAULT_PORT.mjs";
-import { STATUS_CODE_404 } from "../../../flux-http-api/src/Status/STATUS_CODE.mjs";
 import { FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_HOST, FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_PROTOCOL, FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_USER } from "./FLUX_FIELD_VALUE_STORAGE_CONFIG.mjs";
 import { HEADER_AUTHORIZATION, HEADER_CONTENT_TYPE } from "../../../flux-http-api/src/Header/HEADER.mjs";
 import { INPUT_TYPE_NUMBER, INPUT_TYPE_SELECT, INPUT_TYPE_TEXT } from "../../../flux-form/src/INPUT_TYPE.mjs";
 import { METHOD_DELETE, METHOD_PATCH, METHOD_PUT } from "../../../flux-http-api/src/Method/METHOD.mjs";
+import { STATUS_CODE_400, STATUS_CODE_404 } from "../../../flux-http-api/src/Status/STATUS_CODE.mjs";
 
 /** @typedef {import("../../../flux-http-api/src/FluxHttpApi.mjs").FluxHttpApi} FluxHttpApi */
 /** @typedef {import("../../../flux-http-api/src/Server/HttpServerRequest.mjs").HttpServerRequest} HttpServerRequest */
@@ -110,13 +111,21 @@ export class FluxFieldValueStorageService {
             return false;
         }
 
-        await this.#request(
-            `value/delete/${object_id}`,
-            null,
-            null,
-            METHOD_DELETE,
-            false
-        );
+        try {
+            await this.#request(
+                `value/delete/${object_id}`,
+                null,
+                null,
+                METHOD_DELETE,
+                false
+            );
+        } catch (error) {
+            if (error instanceof HttpClientResponse && error.status_code === STATUS_CODE_400) {
+                return false;
+            }
+
+            return Promise.reject(error);
+        }
 
         return true;
     }
@@ -155,12 +164,17 @@ export class FluxFieldValueStorageService {
             return null;
         }
 
-        const value = await this.#request(
-            `value/get/${object.id}`
-        );
+        let value;
+        try {
+            value = await this.#request(
+                `value/get/${object.id}`
+            );
+        } catch (error) {
+            if (error instanceof HttpClientResponse && error.status_code === STATUS_CODE_404) {
+                return null;
+            }
 
-        if (value === null) {
-            return null;
+            return Promise.reject(error);
         }
 
         return {
@@ -185,9 +199,20 @@ export class FluxFieldValueStorageService {
             return null;
         }
 
-        return this.#request(
-            `value/get/${object.id}/as-text`
-        );
+        let value;
+        try {
+            value = await this.#request(
+                `value/get/${object.id}/as-text`
+            );
+        } catch (error) {
+            if (error instanceof HttpClientResponse && error.status_code === STATUS_CODE_404) {
+                return null;
+            }
+
+            return Promise.reject(error);
+        }
+
+        return value;
     }
 
     /**
@@ -207,9 +232,20 @@ export class FluxFieldValueStorageService {
             }
         }
 
-        return this.#request(
-            `value/get-inputs${object !== null ? `/${object.id}` : ""}`
-        );
+        let inputs;
+        try {
+            inputs = await this.#request(
+                `value/get-inputs${object !== null ? `/${object.id}` : ""}`
+            );
+        } catch (error) {
+            if (error instanceof HttpClientResponse && error.status_code === STATUS_CODE_404) {
+                return null;
+            }
+
+            return Promise.reject(error);
+        }
+
+        return inputs;
     }
 
     /**
@@ -240,20 +276,25 @@ export class FluxFieldValueStorageService {
             return null;
         }
 
-        const values = await this.#request(
-            "value/get",
-            {
-                ...filter_object_id !== null ? {
-                    name: filter_object_id
-                } : null,
-                ...objects.length === 0 ? {
-                    "has-value": false
-                } : null
+        let values;
+        try {
+            values = await this.#request(
+                "value/get",
+                {
+                    ...filter_object_id !== null ? {
+                        name: filter_object_id
+                    } : null,
+                    ...objects.length === 0 ? {
+                        "has-value": false
+                    } : null
+                }
+            );
+        } catch (error) {
+            if (error instanceof HttpClientResponse && error.status_code === STATUS_CODE_400) {
+                return null;
             }
-        );
 
-        if (values === null) {
-            return null;
+            return Promise.reject(error);
         }
 
         return objects.map(object => {
@@ -306,20 +347,25 @@ export class FluxFieldValueStorageService {
             return null;
         }
 
-        const table = await this.#request(
-            "value/get-table",
-            {
-                ...filter_object_id !== null ? {
-                    name: filter_object_id
-                } : null,
-                ...objects.length === 0 ? {
-                    "has-value": false
-                } : null
+        let table;
+        try {
+            table = await this.#request(
+                "value/get-table",
+                {
+                    ...filter_object_id !== null ? {
+                        name: filter_object_id
+                    } : null,
+                    ...objects.length === 0 ? {
+                        "has-value": false
+                    } : null
+                }
+            );
+        } catch (error) {
+            if (error instanceof HttpClientResponse && error.status_code === STATUS_CODE_400) {
+                return null;
             }
-        );
 
-        if (table === null) {
-            return null;
+            return Promise.reject(error);
         }
 
         const columns = table.columns.filter(column => column.key !== "name");
@@ -458,13 +504,21 @@ export class FluxFieldValueStorageService {
             return false;
         }
 
-        await this.#request(
-            `value/store/${object.id}`,
-            null,
-            value,
-            keep_other_field_values ?? false ? METHOD_PATCH : METHOD_PUT,
-            false
-        );
+        try {
+            await this.#request(
+                `value/store/${object.id}`,
+                null,
+                value,
+                keep_other_field_values ?? false ? METHOD_PATCH : METHOD_PUT,
+                false
+            );
+        } catch (error) {
+            if (error instanceof HttpClientResponse && error.status_code === STATUS_CODE_400) {
+                return false;
+            }
+
+            return Promise.reject(error);
+        }
 
         return true;
     }
@@ -506,23 +560,15 @@ export class FluxFieldValueStorageService {
                 {
                     [HEADER_AUTHORIZATION]: this.#authorization
                 },
-                false,
+                true,
                 _response_body,
                 null,
                 this.#https_certificate
             )
         );
 
-        if (_response_body && response.status_code === STATUS_CODE_404) {
-            return null;
-        }
-
-        if (!response.status_code_is_ok) {
-            return Promise.reject(response);
-        }
-
         if (!_response_body) {
-            return null;
+            return;
         }
 
         return response.body.json();

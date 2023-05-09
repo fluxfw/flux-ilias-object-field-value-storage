@@ -1,6 +1,7 @@
 import { AUTHORIZATION_SCHEMA_BASIC } from "../../../flux-http-api/src/Authorization/AUTHORIZATION_SCHEMA.mjs";
 import { HEADER_AUTHORIZATION } from "../../../flux-http-api/src/Header/HEADER.mjs";
 import { HttpClientRequest } from "../../../flux-http-api/src/Client/HttpClientRequest.mjs";
+import { HttpClientResponse } from "../../../flux-http-api/src/Client/HttpClientResponse.mjs";
 import { ILIAS_OBJECT_TITLE_PATTERN } from "./ILIAS_OBJECT_TITLE.mjs";
 import { ILIAS_OBJECT_TYPES } from "./ILIAS_OBJECT_TYPES.mjs";
 import { PROTOCOL_DEFAULT_PORT } from "../../../flux-http-api/src/Protocol/PROTOCOL_DEFAULT_PORT.mjs";
@@ -104,11 +105,20 @@ export class IliasService {
             return null;
         }
 
-        const object = await this.#request(
-            `object/by-id/${id}`
-        );
+        let object;
+        try {
+            object = await this.#request(
+                `object/by-id/${id}`
+            );
+        } catch (error) {
+            if (error instanceof HttpClientResponse && error.status_code === STATUS_CODE_404) {
+                return null;
+            }
 
-        if (object === null || !Object.keys(ILIAS_OBJECT_TYPES).includes(object.type)) {
+            return Promise.reject(error);
+        }
+
+        if (!Object.keys(ILIAS_OBJECT_TYPES).includes(object.type)) {
             return null;
         }
 
@@ -203,7 +213,7 @@ export class IliasService {
             }
         }
 
-        const response = await this.#flux_http_api.request(
+        return (await this.#flux_http_api.request(
             HttpClientRequest.new(
                 url,
                 null,
@@ -216,16 +226,6 @@ export class IliasService {
                 null,
                 this.#https_certificate
             )
-        );
-
-        if (response.status_code === STATUS_CODE_404) {
-            return null;
-        }
-
-        if (!response.status_code_is_ok) {
-            return Promise.reject(response);
-        }
-
-        return response.body.json();
+        )).body.json();
     }
 }
