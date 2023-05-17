@@ -87,8 +87,6 @@ You need `flux-ilias-rest-api` on your ILIAS server
 
 [Set up](https://github.com/fluxfw/flux-ilias-rest-api/blob/main/README.md#installation)
 
-You need to create an ILIAS `rest` user
-
 #### In [flux-ilias-nginx-base](https://github.com/fluxfw/flux-ilias-nginx-base)
 
 ```dockerfile
