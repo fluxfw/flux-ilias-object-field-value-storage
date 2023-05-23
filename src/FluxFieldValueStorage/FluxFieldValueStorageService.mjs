@@ -1,4 +1,5 @@
 import { AUTHORIZATION_SCHEMA_BASIC } from "../../../flux-http-api/src/Authorization/AUTHORIZATION_SCHEMA.mjs";
+import { EMPTY_COLUMN } from "../../../flux-table/src/EMPTY_COLUMN.mjs";
 import { HttpClientRequest } from "../../../flux-http-api/src/Client/HttpClientRequest.mjs";
 import { HttpClientResponse } from "../../../flux-http-api/src/Client/HttpClientResponse.mjs";
 import { ILIAS_OBJECT_ID_PATTERN } from "../Ilias/ILIAS_OBJECT_ID.mjs";
@@ -406,11 +407,11 @@ export class FluxFieldValueStorageService {
                         "has-value": false,
                         ...Object.fromEntries(columns.map(column => [
                             column.key,
-                            "-"
+                            EMPTY_COLUMN
                         ]))
                     },
                     "object-id": name,
-                    "object-ref-id": `${object.ref_id ?? "-"}`,
+                    "object-ref-id": `${object.ref_id ?? EMPTY_COLUMN}`,
                     "object-type": ILIAS_OBJECT_TYPES[object.type] ?? object.type,
                     "object-title": object.title
                 };

@@ -6,6 +6,12 @@ Changes:
 
 \-
 
+## v2023-05-23-1-beta
+
+Changes:
+
+- `flux-table`
+
 ## v2023-05-12-2-beta
 
 Changes:
