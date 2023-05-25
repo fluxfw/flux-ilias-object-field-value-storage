@@ -23,10 +23,8 @@ installLibrary flux-authentication-backend https://github.com/fluxfw/flux-authen
 
 installLibrary flux-config-api https://github.com/fluxfw/flux-config-api/archive/refs/tags/v2023-04-12-1.tar.gz
 
-installLibrary flux-form https://github.com/fluxfw/flux-form/archive/refs/tags/v2023-05-24-1.tar.gz
+installLibrary flux-form https://github.com/fluxfw/flux-form/archive/refs/tags/v2023-05-25-1.tar.gz
 
 installLibrary flux-http-api https://github.com/fluxfw/flux-http-api/archive/refs/tags/v2023-04-20-1.tar.gz
 
 installLibrary flux-shutdown-handler https://github.com/fluxfw/flux-shutdown-handler/archive/refs/tags/v2023-03-16-1.tar.gz
-
-installLibrary flux-table https://github.com/fluxfw/flux-table/archive/refs/tags/v2023-05-23-1.tar.gz

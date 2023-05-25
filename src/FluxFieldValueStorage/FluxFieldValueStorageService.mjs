@@ -1,5 +1,4 @@
 import { AUTHORIZATION_SCHEMA_BASIC } from "../../../flux-http-api/src/Authorization/AUTHORIZATION_SCHEMA.mjs";
-import { EMPTY_COLUMN } from "../../../flux-table/src/EMPTY_COLUMN.mjs";
 import { HttpClientRequest } from "../../../flux-http-api/src/Client/HttpClientRequest.mjs";
 import { HttpClientResponse } from "../../../flux-http-api/src/Client/HttpClientResponse.mjs";
 import { ILIAS_OBJECT_ID_PATTERN } from "../Ilias/ILIAS_OBJECT_ID.mjs";
@@ -18,6 +17,7 @@ import { STATUS_CODE_400, STATUS_CODE_404 } from "../../../flux-http-api/src/Sta
 /** @typedef {import("../Ilias/IliasService.mjs").IliasService} IliasService */
 /** @typedef {import("../../../flux-form/src/Input.mjs").Input} Input */
 /** @typedef {import("../../../flux-field-value-storage/src/Value/Value.mjs").Value} Value */
+/** @typedef {import("../../../flux-field-value-storage/src/Value/ValueAsFormat.mjs").ValueAsFormat} ValueAsFormat */
 /** @typedef {import("../../../flux-field-value-storage/src/Value/ValueAsText.mjs").ValueAsText} ValueAsText */
 /** @typedef {import("../../../flux-field-value-storage/src/Value/ValueTable.mjs").ValueTable} ValueTable */
 
@@ -185,6 +185,35 @@ export class FluxFieldValueStorageService {
             "object-type": object.type,
             "object-title": object.title
         };
+    }
+
+    /**
+     * @param {number} object_id
+     * @returns {Promise<ValueAsFormat[] | null>}
+     */
+    async getValueAsFormat(object_id) {
+        const object = await this.#ilias_service.getObject(
+            object_id
+        );
+
+        if (object === null) {
+            return null;
+        }
+
+        let value;
+        try {
+            value = await this.#request(
+                `value/get/${object.id}/as-format`
+            );
+        } catch (error) {
+            if (error instanceof HttpClientResponse && error.status_code === STATUS_CODE_404) {
+                return null;
+            }
+
+            return Promise.reject(error);
+        }
+
+        return value;
     }
 
     /**
@@ -404,14 +433,10 @@ export class FluxFieldValueStorageService {
                 return {
                     ...row ?? {
                         name,
-                        "has-value": false,
-                        ...Object.fromEntries(columns.map(column => [
-                            column.key,
-                            EMPTY_COLUMN
-                        ]))
+                        "has-value": false
                     },
                     "object-id": name,
-                    "object-ref-id": `${object.ref_id ?? EMPTY_COLUMN}`,
+                    "object-ref-id": object.ref_id,
                     "object-type": ILIAS_OBJECT_TYPES[object.type] ?? object.type,
                     "object-title": object.title
                 };

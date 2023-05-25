@@ -66,6 +66,12 @@ export class HandleValueRequest {
             );
         }
 
+        if (request.url_path_parts.length === 5 && request.url_path_parts[2] === "get" && request.url_path_parts[4] === "as-format") {
+            return this.#getValueAsFormat(
+                request
+            );
+        }
+
         if (request.url_path_parts.length === 5 && request.url_path_parts[2] === "get" && request.url_path_parts[4] === "as-text") {
             return this.#getValueAsText(
                 request
@@ -187,6 +193,46 @@ export class HandleValueRequest {
         ] = request.url_path_parts;
 
         const value = await this.#flux_field_value_storage_service.getValue(
+            ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseFloat(object_id) : object_id
+        );
+
+        if (value === null) {
+            return HttpServerResponse.text(
+                "Value not found",
+                STATUS_CODE_404
+            );
+        }
+
+        return HttpServerResponse.json(
+            value
+        );
+    }
+
+    /**
+     * @param {HttpServerRequest} request
+     * @returns {Promise<HttpServerResponse>}
+     */
+    async #getValueAsFormat(request) {
+        const response = await this.#flux_http_api.validateMethods(
+            request,
+            [
+                METHOD_GET,
+                METHOD_HEAD
+            ]
+        );
+
+        if (response !== null) {
+            return response;
+        }
+
+        const [
+            ,
+            ,
+            ,
+            object_id
+        ] = request.url_path_parts;
+
+        const value = await this.#flux_field_value_storage_service.getValueAsFormat(
             ILIAS_OBJECT_ID_PATTERN.test(object_id) ? parseFloat(object_id) : object_id
         );
 
