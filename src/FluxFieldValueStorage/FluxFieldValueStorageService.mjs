@@ -5,6 +5,7 @@ import { ILIAS_OBJECT_ID_PATTERN } from "../Ilias/ILIAS_OBJECT_ID.mjs";
 import { ILIAS_OBJECT_TITLE_PATTERN } from "../Ilias/ILIAS_OBJECT_TITLE.mjs";
 import { ILIAS_OBJECT_TYPES } from "../Ilias/ILIAS_OBJECT_TYPES.mjs";
 import { PROTOCOL_DEFAULT_PORT } from "../../../flux-http-api/src/Protocol/PROTOCOL_DEFAULT_PORT.mjs";
+import { VALUE_FORMAT_TYPE_URL } from "../../../flux-value-format/src/VALUE_FORMAT_TYPE.mjs";
 import { FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_HOST, FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_PROTOCOL, FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_USER } from "./FLUX_FIELD_VALUE_STORAGE_CONFIG.mjs";
 import { HEADER_AUTHORIZATION, HEADER_CONTENT_TYPE } from "../../../flux-http-api/src/Header/HEADER.mjs";
 import { INPUT_TYPE_NUMBER, INPUT_TYPE_SELECT, INPUT_TYPE_TEXT } from "../../../flux-form/src/INPUT_TYPE.mjs";
@@ -409,7 +410,8 @@ export class FluxFieldValueStorageService {
                 },
                 {
                     key: "object-ref-id",
-                    label: "Object ref id"
+                    label: "Object ref id",
+                    "value-format-type": VALUE_FORMAT_TYPE_URL
                 },
                 {
                     key: "object-type",
@@ -436,7 +438,10 @@ export class FluxFieldValueStorageService {
                         "has-value": false
                     },
                     "object-id": name,
-                    "object-ref-id": object.ref_id,
+                    "object-ref-id": {
+                        url: object.url,
+                        label: `${object.ref_id}`
+                    },
                     "object-type": ILIAS_OBJECT_TYPES[object.type] ?? object.type,
                     "object-title": object.title
                 };
