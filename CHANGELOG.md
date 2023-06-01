@@ -6,6 +6,12 @@ Changes:
 
 \-
 
+## v2023-06-01-1-beta
+
+Changes:
+
+- `flux-value-format`
+
 ## v2023-05-30-2-beta
 
 Changes:
