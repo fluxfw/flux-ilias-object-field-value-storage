@@ -29,4 +29,4 @@ installLibrary flux-http-api https://github.com/fluxfw/flux-http-api/archive/ref
 
 installLibrary flux-shutdown-handler https://github.com/fluxfw/flux-shutdown-handler/archive/refs/tags/v2023-03-16-1.tar.gz
 
-installLibrary flux-value-format https://github.com/fluxfw/flux-value-format/archive/refs/tags/v2023-06-01-1.tar.gz
+installLibrary flux-value-format https://github.com/fluxfw/flux-value-format/archive/refs/tags/v2023-06-02-4.tar.gz
