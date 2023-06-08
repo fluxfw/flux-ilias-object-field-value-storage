@@ -1,14 +1,15 @@
 import { AUTHORIZATION_SCHEMA_BASIC } from "../../../flux-http-api/src/Authorization/AUTHORIZATION_SCHEMA.mjs";
-import { FORMAT_VALUE_TYPE_URL } from "../../../flux-value-format/src/FORMAT_VALUE_TYPE.mjs";
 import { HttpClientRequest } from "../../../flux-http-api/src/Client/HttpClientRequest.mjs";
 import { HttpClientResponse } from "../../../flux-http-api/src/Client/HttpClientResponse.mjs";
 import { ILIAS_OBJECT_ID_PATTERN } from "../Ilias/ILIAS_OBJECT_ID.mjs";
 import { ILIAS_OBJECT_TITLE_PATTERN } from "../Ilias/ILIAS_OBJECT_TITLE.mjs";
 import { ILIAS_OBJECT_TYPES } from "../Ilias/ILIAS_OBJECT_TYPES.mjs";
 import { PROTOCOL_DEFAULT_PORT } from "../../../flux-http-api/src/Protocol/PROTOCOL_DEFAULT_PORT.mjs";
+import { TIMESTAMP_PATTERN } from "../../../flux-value-format/src/DEFAULT_FORMAT_VALUE_TYPES.mjs";
 import { FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_HOST, FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_PROTOCOL, FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_USER } from "./FLUX_FIELD_VALUE_STORAGE_CONFIG.mjs";
+import { FORMAT_VALUE_TYPE_DATE_TIME, FORMAT_VALUE_TYPE_URL } from "../../../flux-value-format/src/FORMAT_VALUE_TYPE.mjs";
 import { HEADER_AUTHORIZATION, HEADER_CONTENT_TYPE } from "../../../flux-http-api/src/Header/HEADER.mjs";
-import { INPUT_TYPE_NUMBER, INPUT_TYPE_SELECT, INPUT_TYPE_TEXT } from "../../../flux-form/src/INPUT_TYPE.mjs";
+import { INPUT_TYPE_DATETIME_LOCAL, INPUT_TYPE_NUMBER, INPUT_TYPE_SELECT, INPUT_TYPE_TEXT } from "../../../flux-form/src/INPUT_TYPE.mjs";
 import { METHOD_DELETE, METHOD_PATCH, METHOD_PUT } from "../../../flux-http-api/src/Method/METHOD.mjs";
 import { STATUS_CODE_400, STATUS_CODE_404 } from "../../../flux-http-api/src/Status/STATUS_CODE.mjs";
 
@@ -184,6 +185,8 @@ export class FluxFieldValueStorageService {
             "object-id": object.id,
             "object-ref-id": object.ref_id,
             "object-type": object.type,
+            "object-created": object.created,
+            "object-updated": object.updated,
             "object-title": object.title
         };
     }
@@ -300,6 +303,16 @@ export class FluxFieldValueStorageService {
             filter_object_id,
             typeof _filter["object-ref-id"] === "string" && ILIAS_OBJECT_ID_PATTERN.test(_filter["object-ref-id"]) ? parseFloat(_filter["object-ref-id"]) : _filter["object-ref-id"] ?? null,
             typeof _filter["object-type"] === "string" ? _filter["object-type"].split(",") : _filter["object-type"] ?? null,
+            typeof _filter["object-created"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-created"]) ? parseFloat(_filter["object-created"]) : _filter["object-created"] ?? null,
+            typeof _filter["object-created-from"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-created-from"]) ? parseFloat(_filter["object-created-from"]) : _filter["object-created-from"] ?? null,
+            typeof _filter["object-created-to"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-created-to"]) ? parseFloat(_filter["object-created-to"]) : _filter["object-created-to"] ?? null,
+            typeof _filter["object-created-after"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-created-after"]) ? parseFloat(_filter["object-created-after"]) : _filter["object-created-after"] ?? null,
+            typeof _filter["object-created-before"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-created-before"]) ? parseFloat(_filter["object-created-before"]) : _filter["object-created-before"] ?? null,
+            typeof _filter["object-updated"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-updated"]) ? parseFloat(_filter["object-updated"]) : _filter["object-updated"] ?? null,
+            typeof _filter["object-updated-from"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-updated-from"]) ? parseFloat(_filter["object-updated-from"]) : _filter["object-updated-from"] ?? null,
+            typeof _filter["object-updated-to"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-updated-to"]) ? parseFloat(_filter["object-updated-to"]) : _filter["object-updated-to"] ?? null,
+            typeof _filter["object-updated-after"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-updated-after"]) ? parseFloat(_filter["object-updated-after"]) : _filter["object-updated-after"] ?? null,
+            typeof _filter["object-updated-before"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-updated-before"]) ? parseFloat(_filter["object-updated-before"]) : _filter["object-updated-before"] ?? null,
             _filter["object-title"] ?? null
         );
 
@@ -345,6 +358,8 @@ export class FluxFieldValueStorageService {
                 "object-id": object.id,
                 "object-ref-id": object.ref_id,
                 "object-type": object.type,
+                "object-created": object.created,
+                "object-updated": object.updated,
                 "object-title": object.title
             };
         }).filter(value => value !== null);
@@ -371,6 +386,16 @@ export class FluxFieldValueStorageService {
             filter_object_id,
             typeof _filter["object-ref-id"] === "string" && ILIAS_OBJECT_ID_PATTERN.test(_filter["object-ref-id"]) ? parseFloat(_filter["object-ref-id"]) : _filter["object-ref-id"] ?? null,
             typeof _filter["object-type"] === "string" ? _filter["object-type"].split(",") : _filter["object-type"] ?? null,
+            typeof _filter["object-created"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-created"]) ? parseFloat(_filter["object-created"]) : _filter["object-created"] ?? null,
+            typeof _filter["object-created-from"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-created-from"]) ? parseFloat(_filter["object-created-from"]) : _filter["object-created-from"] ?? null,
+            typeof _filter["object-created-to"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-created-to"]) ? parseFloat(_filter["object-created-to"]) : _filter["object-created-to"] ?? null,
+            typeof _filter["object-created-after"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-created-after"]) ? parseFloat(_filter["object-created-after"]) : _filter["object-created-after"] ?? null,
+            typeof _filter["object-created-before"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-created-before"]) ? parseFloat(_filter["object-created-before"]) : _filter["object-created-before"] ?? null,
+            typeof _filter["object-updated"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-updated"]) ? parseFloat(_filter["object-updated"]) : _filter["object-updated"] ?? null,
+            typeof _filter["object-updated-from"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-updated-from"]) ? parseFloat(_filter["object-updated-from"]) : _filter["object-updated-from"] ?? null,
+            typeof _filter["object-updated-to"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-updated-to"]) ? parseFloat(_filter["object-updated-to"]) : _filter["object-updated-to"] ?? null,
+            typeof _filter["object-updated-after"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-updated-after"]) ? parseFloat(_filter["object-updated-after"]) : _filter["object-updated-after"] ?? null,
+            typeof _filter["object-updated-before"] === "string" && TIMESTAMP_PATTERN.test(_filter["object-updated-before"]) ? parseFloat(_filter["object-updated-before"]) : _filter["object-updated-before"] ?? null,
             _filter["object-title"] ?? null
         );
 
@@ -418,6 +443,16 @@ export class FluxFieldValueStorageService {
                     label: "Object type"
                 },
                 {
+                    key: "object-created",
+                    label: "Object created",
+                    type: FORMAT_VALUE_TYPE_DATE_TIME
+                },
+                {
+                    key: "object-updated",
+                    label: "Object updated",
+                    type: FORMAT_VALUE_TYPE_DATE_TIME
+                },
+                {
                     key: "object-title",
                     label: "Object title"
                 },
@@ -443,6 +478,8 @@ export class FluxFieldValueStorageService {
                         label: `${object.ref_id}`
                     },
                     "object-type": ILIAS_OBJECT_TYPES[object.type] ?? object.type,
+                    "object-created": object.created,
+                    "object-updated": object.updated,
                     "object-title": object.title
                 };
             }).filter(row => row !== null)
@@ -484,6 +521,30 @@ export class FluxFieldValueStorageService {
                     value
                 })),
                 type: INPUT_TYPE_SELECT
+            },
+            {
+                label: "Object created from",
+                name: "object-created-from",
+                step: "1",
+                type: INPUT_TYPE_DATETIME_LOCAL
+            },
+            {
+                label: "Object created to",
+                name: "object-created-to",
+                step: "1",
+                type: INPUT_TYPE_DATETIME_LOCAL
+            },
+            {
+                label: "Object updated from",
+                name: "object-updated-from",
+                step: "1",
+                type: INPUT_TYPE_DATETIME_LOCAL
+            },
+            {
+                label: "Object updated to",
+                name: "object-updated-to",
+                step: "1",
+                type: INPUT_TYPE_DATETIME_LOCAL
             },
             {
                 label: "Object title",

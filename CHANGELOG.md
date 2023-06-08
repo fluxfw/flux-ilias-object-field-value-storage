@@ -6,6 +6,12 @@ Changes:
 
 \-
 
+## v2023-06-08-1-beta
+
+Changes:
+
+- Objects created and updated filter
+
 ## v2023-06-05-1-beta
 
 Changes:

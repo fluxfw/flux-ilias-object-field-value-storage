@@ -129,10 +129,20 @@ export class IliasService {
      * @param {number | null} id
      * @param {number | null} ref_id
      * @param {string[] | null} type
+     * @param {number | null} created
+     * @param {number | null} created_from
+     * @param {number | null} created_to
+     * @param {number | null} created_after
+     * @param {number | null} created_before
+     * @param {number | null} updated
+     * @param {number | null} updated_from
+     * @param {number | null} updated_to
+     * @param {number | null} updated_after
+     * @param {number | null} updated_before
      * @param {string | null} title
      * @returns {Promise<{[key: string]: *}[] | null>}
      */
-    async getObjects(id = null, ref_id = null, type = null, title = null) {
+    async getObjects(id = null, ref_id = null, type = null, created = null, created_from = null, created_to = null, created_after = null, created_before = null, updated = null, updated_from = null, updated_to = null, updated_after = null, updated_before = null, title = null) {
         if (id !== null && (!Number.isInteger(id) || id < 0)) {
             return null;
         }
@@ -143,6 +153,46 @@ export class IliasService {
 
         const types = Object.keys(ILIAS_OBJECT_TYPES);
         if (type !== null && (!Array.isArray(type) || type.length === 0 || type.some(_type => typeof _type !== "string" || _type === "" || !types.includes(_type)))) {
+            return null;
+        }
+
+        if (created !== null && !Number.isFinite(created)) {
+            return null;
+        }
+
+        if (created_from !== null && !Number.isFinite(created_from)) {
+            return null;
+        }
+
+        if (created_to !== null && !Number.isFinite(created_to)) {
+            return null;
+        }
+
+        if (created_after !== null && !Number.isFinite(created_after)) {
+            return null;
+        }
+
+        if (created_before !== null && !Number.isFinite(created_before)) {
+            return null;
+        }
+
+        if (updated !== null && !Number.isFinite(updated)) {
+            return null;
+        }
+
+        if (updated_from !== null && !Number.isFinite(updated_from)) {
+            return null;
+        }
+
+        if (updated_to !== null && !Number.isFinite(updated_to)) {
+            return null;
+        }
+
+        if (updated_after !== null && !Number.isFinite(updated_after)) {
+            return null;
+        }
+
+        if (updated_before !== null && !Number.isFinite(updated_before)) {
             return null;
         }
 
@@ -160,6 +210,36 @@ export class IliasService {
                     ref_id
                 } : null,
                 types: type !== null ? types.filter(_type => type.includes(_type)) : types,
+                ...created !== null ? {
+                    created
+                } : null,
+                ...created_from !== null ? {
+                    created_from
+                } : null,
+                ...created_to !== null ? {
+                    created_to
+                } : null,
+                ...created_after !== null ? {
+                    created_after
+                } : null,
+                ...created_before !== null ? {
+                    created_before
+                } : null,
+                ...updated !== null ? {
+                    updated
+                } : null,
+                ...updated_from !== null ? {
+                    updated_from
+                } : null,
+                ...updated_to !== null ? {
+                    updated_to
+                } : null,
+                ...updated_after !== null ? {
+                    updated_after
+                } : null,
+                ...updated_before !== null ? {
+                    updated_before
+                } : null,
                 ...title !== null ? {
                     title
                 } : null
