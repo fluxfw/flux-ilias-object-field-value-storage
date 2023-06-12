@@ -250,6 +250,77 @@ export class FluxFieldValueStorageService {
     }
 
     /**
+     * @returns {Promise<Input[]>}
+     */
+    async getValueFilterInputs() {
+        const inputs = await this.#request(
+            "value/get-filter-inputs"
+        );
+
+        return [
+            {
+                label: "Object id",
+                min: "0",
+                name: "object-id",
+                step: "1",
+                type: INPUT_TYPE_NUMBER
+            },
+            {
+                label: "Object ref id",
+                min: "0",
+                name: "object-ref-id",
+                step: "1",
+                type: INPUT_TYPE_NUMBER
+            },
+            {
+                label: "Object type",
+                multiple: true,
+                name: "object-type",
+                options: Object.entries(ILIAS_OBJECT_TYPES).map(([
+                    value,
+                    label
+                ]) => ({
+                    label,
+                    value
+                })),
+                type: INPUT_TYPE_SELECT
+            },
+            {
+                label: "Object created from",
+                name: "object-created-from",
+                step: "1",
+                type: INPUT_TYPE_DATETIME_LOCAL
+            },
+            {
+                label: "Object created to",
+                name: "object-created-to",
+                step: "1",
+                type: INPUT_TYPE_DATETIME_LOCAL
+            },
+            {
+                label: "Object updated from",
+                name: "object-updated-from",
+                step: "1",
+                type: INPUT_TYPE_DATETIME_LOCAL
+            },
+            {
+                label: "Object updated to",
+                name: "object-updated-to",
+                step: "1",
+                type: INPUT_TYPE_DATETIME_LOCAL
+            },
+            {
+                label: "Object title",
+                name: "object-title",
+                pattern: ILIAS_OBJECT_TITLE_PATTERN.source,
+                subtitle: "Only letters, digits, dashes, underscores or spaces",
+                type: INPUT_TYPE_TEXT
+            },
+            ...inputs.filter(input => input.name !== "name")
+        ];
+    }
+
+    /**
      * @param {number | null} object_id
      * @returns {Promise<Input[] | null>}
      */
@@ -320,6 +391,10 @@ export class FluxFieldValueStorageService {
             return null;
         }
 
+        const fields_filter = Object.entries(_filter).filter(([
+            key
+        ]) => key.startsWith("field-"));
+
         let values;
         try {
             values = await this.#request(
@@ -330,7 +405,8 @@ export class FluxFieldValueStorageService {
                     } : null,
                     ...objects.length === 0 ? {
                         "has-value": false
-                    } : null
+                    } : null,
+                    ...Object.fromEntries(fields_filter)
                 }
             );
         } catch (error) {
@@ -346,7 +422,7 @@ export class FluxFieldValueStorageService {
 
             const value = values.find(_value => _value.name === name) ?? null;
 
-            if (filter_has_value !== null && filter_has_value ? value !== null : value === null) {
+            if ((filter_has_value !== null && filter_has_value ? value !== null : value === null) || (fields_filter.length > 0 && value === null)) {
                 return null;
             }
 
@@ -403,6 +479,10 @@ export class FluxFieldValueStorageService {
             return null;
         }
 
+        const fields_filter = Object.entries(_filter).filter(([
+            key
+        ]) => key.startsWith("field-"));
+
         let table;
         try {
             table = await this.#request(
@@ -413,7 +493,8 @@ export class FluxFieldValueStorageService {
                     } : null,
                     ...objects.length === 0 ? {
                         "has-value": false
-                    } : null
+                    } : null,
+                    ...Object.fromEntries(fields_filter)
                 }
             );
         } catch (error) {
@@ -463,7 +544,7 @@ export class FluxFieldValueStorageService {
 
                 const row = table.rows.find(_row => _row.name === name) ?? null;
 
-                if (filter_has_value !== null && (filter_has_value ? row === null : row !== null)) {
+                if ((filter_has_value !== null && (filter_has_value ? row === null : row !== null)) || (fields_filter.length > 0 && row === null)) {
                     return null;
                 }
 
@@ -484,77 +565,6 @@ export class FluxFieldValueStorageService {
                 };
             }).filter(row => row !== null)
         };
-    }
-
-    /**
-     * @returns {Promise<Input[]>}
-     */
-    async getValueTableFilterInputs() {
-        const inputs = await this.#request(
-            "value/get-table-filter-inputs"
-        );
-
-        return [
-            {
-                label: "Object id",
-                min: "0",
-                name: "object-id",
-                step: "1",
-                type: INPUT_TYPE_NUMBER
-            },
-            {
-                label: "Object ref id",
-                min: "0",
-                name: "object-ref-id",
-                step: "1",
-                type: INPUT_TYPE_NUMBER
-            },
-            {
-                label: "Object type",
-                multiple: true,
-                name: "object-type",
-                options: Object.entries(ILIAS_OBJECT_TYPES).map(([
-                    value,
-                    label
-                ]) => ({
-                    label,
-                    value
-                })),
-                type: INPUT_TYPE_SELECT
-            },
-            {
-                label: "Object created from",
-                name: "object-created-from",
-                step: "1",
-                type: INPUT_TYPE_DATETIME_LOCAL
-            },
-            {
-                label: "Object created to",
-                name: "object-created-to",
-                step: "1",
-                type: INPUT_TYPE_DATETIME_LOCAL
-            },
-            {
-                label: "Object updated from",
-                name: "object-updated-from",
-                step: "1",
-                type: INPUT_TYPE_DATETIME_LOCAL
-            },
-            {
-                label: "Object updated to",
-                name: "object-updated-to",
-                step: "1",
-                type: INPUT_TYPE_DATETIME_LOCAL
-            },
-            {
-                label: "Object title",
-                name: "object-title",
-                pattern: ILIAS_OBJECT_TITLE_PATTERN.source,
-                subtitle: "Only letters, digits, dashes, underscores or spaces",
-                type: INPUT_TYPE_TEXT
-            },
-            ...inputs.filter(input => input.name !== "name")
-        ];
     }
 
     /**

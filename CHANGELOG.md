@@ -6,6 +6,12 @@ Changes:
 
 \-
 
+## v2023-06-12-1-beta
+
+Changes:
+
+- Value fields filter
+
 ## v2023-06-08-1-beta
 
 Changes:
