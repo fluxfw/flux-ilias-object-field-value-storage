@@ -6,6 +6,12 @@ Changes:
 
 \-
 
+## v2023-06-15-1-beta
+
+Changes:
+
+- `FluxFilterFormElement`
+
 ## v2023-06-12-1-beta
 
 Changes:

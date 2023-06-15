@@ -2,7 +2,6 @@ import { AUTHORIZATION_SCHEMA_BASIC } from "../../../flux-http-api/src/Authoriza
 import { HEADER_AUTHORIZATION } from "../../../flux-http-api/src/Header/HEADER.mjs";
 import { HttpClientRequest } from "../../../flux-http-api/src/Client/HttpClientRequest.mjs";
 import { HttpClientResponse } from "../../../flux-http-api/src/Client/HttpClientResponse.mjs";
-import { ILIAS_OBJECT_TITLE_PATTERN } from "./ILIAS_OBJECT_TITLE.mjs";
 import { ILIAS_OBJECT_TYPES } from "./ILIAS_OBJECT_TYPES.mjs";
 import { PROTOCOL_DEFAULT_PORT } from "../../../flux-http-api/src/Protocol/PROTOCOL_DEFAULT_PORT.mjs";
 import { STATUS_CODE_404 } from "../../../flux-http-api/src/Status/STATUS_CODE.mjs";
@@ -140,9 +139,10 @@ export class IliasService {
      * @param {number | null} updated_after
      * @param {number | null} updated_before
      * @param {string | null} title
+     * @param {string | null} title_contains
      * @returns {Promise<{[key: string]: *}[] | null>}
      */
-    async getObjects(id = null, ref_id = null, type = null, created = null, created_from = null, created_to = null, created_after = null, created_before = null, updated = null, updated_from = null, updated_to = null, updated_after = null, updated_before = null, title = null) {
+    async getObjects(id = null, ref_id = null, type = null, created = null, created_from = null, created_to = null, created_after = null, created_before = null, updated = null, updated_from = null, updated_to = null, updated_after = null, updated_before = null, title = null, title_contains = null) {
         if (id !== null && (!Number.isInteger(id) || id < 0)) {
             return null;
         }
@@ -152,7 +152,7 @@ export class IliasService {
         }
 
         const types = Object.keys(ILIAS_OBJECT_TYPES);
-        if (type !== null && (!Array.isArray(type) || type.length === 0 || type.some(_type => typeof _type !== "string" || _type === "" || !types.includes(_type)))) {
+        if (type !== null && (!Array.isArray(type) || type.length === 0 || type.some(_type => typeof _type !== "string" || _type === "" || !types.includes(_type)) || new Set(type).size !== type.length)) {
             return null;
         }
 
@@ -196,7 +196,11 @@ export class IliasService {
             return null;
         }
 
-        if (title !== null && (typeof title !== "string" || !ILIAS_OBJECT_TITLE_PATTERN.test(title))) {
+        if (title !== null && (typeof title !== "string")) {
+            return null;
+        }
+
+        if (title_contains !== null && (typeof title_contains !== "string")) {
             return null;
         }
 
@@ -242,6 +246,9 @@ export class IliasService {
                 } : null,
                 ...title !== null ? {
                     title
+                } : null,
+                ...title_contains !== null ? {
+                    title_contains
                 } : null
             }
         );
