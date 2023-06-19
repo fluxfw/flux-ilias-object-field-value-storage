@@ -9,7 +9,7 @@ import { FLUX_FIELD_VALUE_STORAGE_CONFIG_DEFAULT_HOST, FLUX_FIELD_VALUE_STORAGE_
 import { FORMAT_VALUE_TYPE_DATE_TIME, FORMAT_VALUE_TYPE_URL } from "../../../flux-value-format/src/FORMAT_VALUE_TYPE.mjs";
 import { HEADER_AUTHORIZATION, HEADER_CONTENT_TYPE } from "../../../flux-http-api/src/Header/HEADER.mjs";
 import { INPUT_TYPE_DATETIME_LOCAL, INPUT_TYPE_NUMBER, INPUT_TYPE_SELECT, INPUT_TYPE_TEXT } from "../../../flux-form/src/INPUT_TYPE.mjs";
-import { METHOD_DELETE, METHOD_PATCH, METHOD_PUT } from "../../../flux-http-api/src/Method/METHOD.mjs";
+import { METHOD_DELETE, METHOD_PATCH, METHOD_POST, METHOD_PUT } from "../../../flux-http-api/src/Method/METHOD.mjs";
 import { STATUS_CODE_400, STATUS_CODE_404 } from "../../../flux-http-api/src/Status/STATUS_CODE.mjs";
 
 /** @typedef {import("../../../flux-http-api/src/FluxHttpApi.mjs").FluxHttpApi} FluxHttpApi */
@@ -425,18 +425,20 @@ export class FluxFieldValueStorageService {
         try {
             values = await this.#request(
                 "value/get",
+                null,
                 {
                     ...filter_object_id !== null ? {
-                        name: filter_object_id
+                        name: `${filter_object_id}`
                     } : null,
                     ...filter_has_value !== null ? {
                         "has-value": filter_has_value
                     } : null,
                     ...objects.length > 0 ? {
-                        "force-names": objects.map(object => object.id)
+                        "force-names": objects.map(object => `${object.id}`)
                     } : null,
                     ...Object.fromEntries(fields_filter)
-                }
+                },
+                METHOD_POST
             );
         } catch (error) {
             if (error instanceof HttpClientResponse && error.status_code === STATUS_CODE_400) {
@@ -518,18 +520,20 @@ export class FluxFieldValueStorageService {
         try {
             table = await this.#request(
                 "value/get-table",
+                null,
                 {
                     ...filter_object_id !== null ? {
-                        name: filter_object_id
+                        name: `${filter_object_id}`
                     } : null,
                     ...filter_has_value !== null ? {
                         "has-value": filter_has_value
                     } : null,
                     ...objects.length > 0 ? {
-                        "force-names": objects.map(object => object.id)
+                        "force-names": objects.map(object => `${object.id}`)
                     } : null,
                     ...Object.fromEntries(fields_filter)
-                }
+                },
+                METHOD_POST
             );
         } catch (error) {
             if (error instanceof HttpClientResponse && error.status_code === STATUS_CODE_400) {

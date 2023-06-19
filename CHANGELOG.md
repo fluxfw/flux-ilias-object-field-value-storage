@@ -6,6 +6,13 @@ Changes:
 
 \-
 
+## v2023-06-19-1-beta
+
+Changes:
+
+- Value filter also via JSON `POST`
+- `HttpClientResponse` error log
+
 ## v2023-06-15-1-beta
 
 Changes:
