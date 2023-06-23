@@ -7,6 +7,8 @@ RUN ln -s libs/flux-ilias-object-field-value-storage/bin /build/flux-ilias-objec
 
 COPY . /build/flux-ilias-object-field-value-storage/libs/flux-ilias-object-field-value-storage
 
+RUN /build/flux-ilias-object-field-value-storage/libs/flux-ilias-object-field-value-storage/bin/build.mjs prod
+
 FROM node:20-alpine
 
 USER node:node
